@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoodCrafter AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 1; }
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #1e3a8a, #7c3aed, #db2777);
+        }
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4 font-sans">
+    <div class="glassmorphism rounded-2xl p-8 max-w-lg w-full shadow-2xl">
+        <h1 class="text-3xl font-bold text-white text-center mb-6">MoodCrafter AI</h1>
+        <p class="text-gray-200 text-center mb-8">Upload a photo to uncover emotions (Happy or Sad) with AI precision</p>
+
+        {% if error %}
+        <p class="text-red-400 text-center mb-4">{{ error }}</p>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data" class="mb-6">
+            <label class="block text-gray-200 mb-2 text-sm font-semibold">Choose or drag an image</label>
+            <div class="border-2 border-dashed border-gray-400 rounded-lg p-6 text-center hover:border-white transition-colors">
+                <input type="file" name="file" id="imageInput" accept=".jpg,.png" class="hidden">
+                <p class="text-gray-300">Supported formats: JPG, PNG</p>
+                <button type="button" onclick="document.getElementById('imageInput').click()" class="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">Select Image</button>
+            </div>
+            <button type="submit" class="w-full mt-4 bg-gradient-to-r from-indigo-500 to-pink-500 text-white py-3 rounded-lg font-semibold hover:from-indigo-600 hover:to-pink-600 transition">Analyze Emotion</button>
+        </form>
+
+        <div id="imagePreview" class="mt-6 hidden">
+            <h2 class="text-lg font-semibold text-white mb-2">Uploaded Image</h2>
+            <img id="previewImg" class="w-full rounded-lg border border-gray-400" alt="Uploaded Image">
+        </div>
+
+        <div id="loadingSection" class="hidden mt-6 text-center">
+            <div class="inline-block w-12 h-12 border-4 border-t-indigo-500 border-gray-400 rounded-full animate-spin"></div>
+            <p class="text-white mt-2">Analyzing...</p>
+        </div>
+    </div>
+
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const previewImg = document.getElementById('previewImg');
+        const imagePreview = document.getElementById('imagePreview');
+        const loadingSection = document.getElementById('loadingSection');
+        const form = document.querySelector('form');
+
+        imageInput.addEventListener('change', () => {
+            const file = imageInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImg.src = e.target.result;
+                    imagePreview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        form.addEventListener('submit', () => {
+            if (imageInput.files[0]) {
+                loadingSection.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
