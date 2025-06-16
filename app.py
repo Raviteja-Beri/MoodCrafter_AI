@@ -11,7 +11,7 @@ model = load_model(r'C:\Users\HP\VS Code Projects\Deep Learning\CNN\MoodCrafter_
 
 UPLOAD_FOLDER = 'static/uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-ALLOWED_EXTENSIONS = {'jpg', 'png'}
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'}  # Expanded image types
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -21,9 +21,27 @@ def predict_emotion(img_path):
         img = image.load_img(img_path, target_size=(200, 200))
         img_array = image.img_to_array(img)
         img_array = np.expand_dims(img_array, axis=0)
-        img_array /= 255.0  # Standard normalization
+        img_array /= 255.0
+
         prediction = model.predict(img_array)
-        return "Sad 😔" if prediction[0][0] > 0.5 else "Happy 😀"
+        score = prediction[0][0]
+        print(f"Prediction score: {score:.4f}")
+
+        if 0.4 <= score <= 0.6:
+            return f"🤔 Not Sure (Confidence too low: {max(score, 1 - score) * 100:.1f}%)"
+        elif score < 0.4:
+            return f"Happy 😀 ({(1 - score) * 100:.1f}% confidence)"
+        else:
+            return f"Sad 😔 ({score * 100:.1f}% confidence)"
+
+    except Exception as e:
+        return f"Error processing image: {str(e)}"
+
+
+    except Exception as e:
+        return f"Error processing image: {str(e)}"
+
+
     except Exception as e:
         return f"Error processing image: {str(e)}"
 
@@ -45,7 +63,7 @@ def index():
             session['result'] = result
             return redirect(url_for('show_result'))
         else:
-            return render_template('index.html', error="Invalid file format. Use JPG or PNG.")
+            return render_template('index.html', error="Invalid file format. Use JPG, JPEG, PNG, GIF, BMP, or WebP.")
     return render_template('index.html')
 
 @app.route('/result')
@@ -58,4 +76,3 @@ def show_result():
 
 if __name__ == '__main__':
     app.run(debug=True)
-
