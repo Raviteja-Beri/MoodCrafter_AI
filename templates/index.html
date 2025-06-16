@@ -4,78 +4,71 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MoodCrafter AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.7; }
-            50% { transform: scale(1.05); opacity: 1; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #6b7280, #a855f7);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
-        .pulse-animation {
-            animation: pulse 2s infinite;
+        .upload-area {
+            transition: all 0.3s ease;
         }
-        .gradient-bg {
-            background: linear-gradient(135deg, #1e3a8a, #7c3aed, #db2777);
+        .upload-area.dragover {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: #a855f7;
         }
-        .glassmorphism {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
-<body class="gradient-bg min-h-screen flex items-center justify-center p-4 font-sans">
-    <div class="glassmorphism rounded-2xl p-8 max-w-lg w-full shadow-2xl">
-        <h1 class="text-3xl font-bold text-white text-center mb-6">MoodCrafter AI</h1>
-        <p class="text-gray-200 text-center mb-8">Upload a photo to uncover emotions (Happy or Sad) with AI precision</p>
+<body>
+    <div class="container mx-auto px-4 py-8 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 fade-in">MoodCrafter AI</h1>
+        <p class="text-lg md:text-xl text-gray-200 mb-8 fade-in">Upload a photo to uncover emotions (Happy or Sad) with AI precision</p>
 
         {% if error %}
-        <p class="text-red-400 text-center mb-4">{{ error }}</p>
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded-lg fade-in" role="alert">
+            <p>{{ error }}</p>
+        </div>
         {% endif %}
 
-        <form method="POST" enctype="multipart/form-data" class="mb-6">
-            <label class="block text-gray-200 mb-2 text-sm font-semibold">Choose or drag an image</label>
-            <div class="border-2 border-dashed border-gray-400 rounded-lg p-6 text-center hover:border-white transition-colors">
-                <input type="file" name="file" id="imageInput" accept=".jpg,.png" class="hidden">
-                <p class="text-gray-300">Supported formats: JPG, PNG</p>
-                <button type="button" onclick="document.getElementById('imageInput').click()" class="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">Select Image</button>
+        <form action="/" method="POST" enctype="multipart/form-data" class="max-w-lg mx-auto">
+            <div class="upload-area bg-white bg-opacity-10 backdrop-blur-lg border-2 border-dashed border-gray-300 rounded-xl p-8 mb-6 hover:border-purple-500 transition-all duration-300"
+                 ondragover="event.preventDefault(); this.classList.add('dragover');"
+                 ondragleave="this.classList.remove('dragover');"
+                 ondrop="event.preventDefault(); this.classList.remove('dragover'); document.getElementById('file').files = event.dataTransfer.files;">
+                <label for="file" class="block text-gray-200 text-lg cursor-pointer">
+                    <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V8m0 0l-3 3m3-3l3 3m6-3v8m0 0l-3-3m3 3l3-3"/>
+                    </svg>
+                    Choose or drag an image
+                </label>
+                <input type="file" id="file" name="file" accept=".jpg,.jpeg,.png,.gif,.bmp,.webp" class="hidden" onchange="this.form.querySelector('.file-name').textContent = this.files[0].name || 'No file selected';">
+                <p class="file-name text-gray-400 mt-2">No file selected</p>
+                <p class="text-sm text-gray-400 mt-2">Supported formats: JPG, JPEG, PNG, GIF, BMP, WebP</p>
             </div>
-            <button type="submit" class="w-full mt-4 bg-gradient-to-r from-indigo-500 to-pink-500 text-white py-3 rounded-lg font-semibold hover:from-indigo-600 hover:to-pink-600 transition">Analyze Emotion</button>
+            <button type="submit" class="bg-purple-600 text-white font-semibold py-3 px-6 rounded-full hover:bg-purple-700 transition duration-300 transform hover:scale-105">
+                Analyze Emotion
+            </button>
         </form>
-
-        <div id="imagePreview" class="mt-6 hidden">
-            <h2 class="text-lg font-semibold text-white mb-2">Uploaded Image</h2>
-            <img id="previewImg" class="w-full rounded-lg border border-gray-400" alt="Uploaded Image">
-        </div>
-
-        <div id="loadingSection" class="hidden mt-6 text-center">
-            <div class="inline-block w-12 h-12 border-4 border-t-indigo-500 border-gray-400 rounded-full animate-spin"></div>
-            <p class="text-white mt-2">Analyzing...</p>
-        </div>
     </div>
 
     <script>
-        const imageInput = document.getElementById('imageInput');
-        const previewImg = document.getElementById('previewImg');
-        const imagePreview = document.getElementById('imagePreview');
-        const loadingSection = document.getElementById('loadingSection');
-        const form = document.querySelector('form');
-
-        imageInput.addEventListener('change', () => {
-            const file = imageInput.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    previewImg.src = e.target.result;
-                    imagePreview.classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        form.addEventListener('submit', () => {
-            if (imageInput.files[0]) {
-                loadingSection.classList.remove('hidden');
-            }
+        document.querySelector('form').addEventListener('submit', function() {
+            const button = this.querySelector('button[type="submit"]');
+            button.disabled = true;
+            button.textContent = 'Analyzing...';
         });
     </script>
 </body>

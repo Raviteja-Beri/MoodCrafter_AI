@@ -4,53 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MoodCrafter AI - Result</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.7; }
-            50% { transform: scale(1.05); opacity: 1; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #6b7280, #a855f7);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
-        .pulse-animation {
-            animation: pulse 2s infinite;
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
         }
-        .gradient-bg {
-            background: linear-gradient(135deg, #1e3a8a, #7c3aed, #db2777);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .glassmorphism {
+        .result-card {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
     </style>
 </head>
-<body class="gradient-bg min-h-screen flex items-center justify-center p-4 font-sans">
-    <div class="glassmorphism rounded-2xl p-8 max-w-lg w-full shadow-2xl">
-        <h1 class="text-3xl font-bold text-white text-center mb-6">MoodCrafter AI - Result</h1>
-        <p class="text-gray-200 text-center mb-8">Your emotion analysis result</p>
+<body>
+    <div class="container mx-auto px-4 py-8 text-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 fade-in">MoodCrafter AI - Result</h1>
+        <p class="text-lg md:text-xl text-gray-200 mb-8 fade-in">Your emotion analysis result</p>
 
-        {% if filepath %}
-        <div class="mt-6">
-            <h2 class="text-lg font-semibold text-white mb-2">Uploaded Image</h2>
-            <img src="{{ filepath }}" class="w-full rounded-lg border border-gray-400" alt="Uploaded Image">
-        </div>
-        {% else %}
-        <p class="text-gray-300 text-center">No image provided.</p>
-        {% endif %}
-
-        <div class="mt-6">
-            <h2 class="text-lg font-semibold text-white mb-2">Prediction Result</h2>
-            <div class="glassmorphism p-4 rounded-lg text-center">
-                <p class="text-white text-2xl font-bold">
-                    {% if result %}
-                        {{ result }}
-                    {% else %}
-                        No result available
-                    {% endif %}
-                </p>
+        <div class="result-card max-w-lg mx-auto p-6 rounded-xl shadow-lg fade-in">
+            {% if filepath %}
+            <img src="{{ filepath }}" alt="Uploaded Image" class="w-full h-64 object-cover rounded-lg mb-6">
+            {% else %}
+            <div class="bg-gray-700 text-gray-300 p-4 rounded-lg mb-6">
+                No image provided.
             </div>
+            {% endif %}
+
+            {% if result %}
+                {% if result.startswith('Error') %}
+                <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg" role="alert">
+                    {{ result }}
+                </div>
+                {% else %}
+                <h2 class="text-2xl font-semibold text-white mb-4">Predicted Mood: {{ result }}</h2>
+                {% endif %}
+            {% else %}
+            <div class="bg-gray-700 text-gray-300 p-4 rounded-lg">
+                No result available.
+            </div>
+            {% endif %}
         </div>
 
-        <a href="{{ url_for('index') }}" class="mt-8 block w-full bg-gradient-to-r from-indigo-500 to-pink-500 text-white py-3 rounded-lg font-semibold text-center hover:from-indigo-600 hover:to-pink-600 transition">Upload Another Image</a>
+        <a href="/" class="mt-8 inline-block bg-purple-600 text-white font-semibold py-3 px-6 rounded-full hover:bg-purple-700 transition duration-300 transform hover:scale-105">
+            Upload Another Image
+        </a>
     </div>
 </body>
 </html>
